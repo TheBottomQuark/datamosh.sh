@@ -30,7 +30,7 @@ function convert_clips {
     [[ "$w" == "" ]] && cleanup
 
     echo "Converting clips..."
-    ffmpeg -i "$CLIP1" -vf "fps=$FPS" -y -v quiet "$TMP1"
+    ffmpeg -i "$CLIP1" -vf "fps=$FPS,crop=$WIDTH:$HEIGHT:0:0" -pix_fmt yuv420p -y -v quiet "$TMP1"
 
     nw=$(printf "%.0f" $(echo "$HEIGHT/$h*$w" | bc -l))
     (( "$nw" % 2 != 0 )) && nw="$(("$nw" + 1))"
@@ -45,7 +45,7 @@ function convert_clips {
 
     ffmpeg -i $CLIP2 -ar "$RATE" -keyint_min "$packets" \
         -vf "fps=$FPS,scale=$nw:$nh,crop=$WIDTH:$HEIGHT:(iw-ow)/2:(ih-oh)/2" \
-        -y -v quiet "$TMP2"
+        -pix_fmt yuv420p -y -v quiet "$TMP2"
 }
 
 function concat_clips {
