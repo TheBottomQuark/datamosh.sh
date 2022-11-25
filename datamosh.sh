@@ -21,11 +21,15 @@ function convert_clips {
     TMP2=$(mktemp XXXXXXXXXX.mp4)
     { read w; read h;} <<< $(read_stream_info $CLIP2)
     [[ "$w" == "" ]] && cleanup
-    nw=$(printf "%.0f" $(echo "$HEIGHT/$h*$w" | bc -l))
-    (( $nw % 2 != 0 )) && nw=$(($nw + 1))
     echo "Converting clips..."
     ffmpeg -i $CLIP1 -vf "fps=$FPS" -y -v quiet $TMP1
-    ffmpeg -i $CLIP2 -vf "fps=$FPS,scale=$nw:$HEIGHT,crop=$WIDTH:$HEIGHT:(iw-ow)/2:0" -y -v quiet $TMP2
+    nw=$(printf "%.0f" $(echo "$HEIGHT/$h*$w" | bc -l))
+    nh=$HEIGHT
+    (( "$nw" % 2 != 0 )) && nw=$(("$nw" + 1))
+    (( "$nw" < $WIDTH )) && nh=$(printf "%.0f" $(echo "$WIDTH/$w*$h" | bc -l)) && nw=$WIDTH
+    (( "$nh" % 2 != 0 )) && nh=$(("$nh" + 1))
+    ffmpeg -i $CLIP2 -ar $RATE -vf "fps=$FPS,scale=$nw:$nh,crop=$WIDTH:$HEIGHT:(iw-ow)/2:(ih-oh)/2" -y -v quiet $TMP2
+    
 }
 
 function concat_clips {
@@ -34,7 +38,7 @@ function concat_clips {
 
     [ -f $OUTPUT ] && [[ "$(read -e -p 'File '$OUTPUT' already exists, do you want to replace? [y/N]>'; echo $REPLY)" != [Yy]* ]] && return
     echo "Combining files and removing keyframes..."
-    ffmpeg -f concat -i $LIST -c:v copy -ar $RATE -bsf:v "noise=drop='gte(n,$PACKETS) * eq(key,1)'" -y -v quiet $OUTPUT
+    ffmpeg -f concat -i $LIST -c:v copy -bsf:v "noise=drop='gte(n,$PACKETS) * eq(key,1)'" -y -v quiet $OUTPUT
 }
 
 function cleanup {
@@ -55,3 +59,4 @@ function cleanup {
 convert_clips 
 concat_clips
 cleanup
+
