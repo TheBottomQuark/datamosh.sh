@@ -52,9 +52,9 @@ function concat_clips {
     LIST=$(mktemp XXXXXXXXXX.txt)
     echo -e "file $TMP1\nfile $TMP2" > "$LIST"
 
-    if [[ -f $OUTPUT ]]
-        && [[ "$(read -e -p
-            'File '$OUTPUT' already exists, do you want to replace? [y/N]>'
+    if [[ -f $OUTPUT ]] \
+        && [[ "$(read -e -p \
+            'File '$OUTPUT' already exists, do you want to replace? [y/N]>' \
             echo $REPLY)" != "[Yy]*" ]]; then
         return
     fi
@@ -75,9 +75,9 @@ function cleanup {
     exit
 }
 
-[ $# -lt 3 ] && help
-[ ! -f $CLIP1 ] && echo "File $CLIP1 does not exist" && exit
-[ ! -f $CLIP2 ] && echo "File $CLIP2 does not exist" && exit
+[[ $# -lt 3 ]] && help
+[[ ! -f $CLIP1 ]] && echo "File $CLIP1 does not exist" && exit
+[[ ! -f $CLIP2 ]] && echo "File $CLIP2 does not exist" && exit
 
 { read WIDTH; read HEIGHT; read FPS; read PACKETS; read RATE;} <<< $(read_stream_info "$CLIP1")
 [[ "$WIDTH" == "" ]] && cleanup
