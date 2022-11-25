@@ -30,7 +30,12 @@ function convert_clips {
     [[ "$w" == "" ]] && cleanup
 
     echo "Converting clips..."
-    ffmpeg -i "$CLIP1" -vf "fps=$FPS,crop=$WIDTH:$HEIGHT:0:0" -pix_fmt yuv420p -y -v quiet "$TMP1"
+
+    (( "$WIDTH" % 2 != 0 )) && WIDTH="$(($WIDTH - 1))"
+    (( "$HEIGHT" % 2 != 0 )) && HEIGHT="$(($HEIGHT - 1))"
+
+    ffmpeg -i "$CLIP1" -vf "fps=$FPS,crop=$WIDTH:$HEIGHT:0:0" \
+        -pix_fmt yuv420p -y -v quiet "$TMP1"
 
     nw=$(printf "%.0f" $(echo "$HEIGHT/$h*$w" | bc -l))
     (( "$nw" % 2 != 0 )) && nw="$(("$nw" + 1))"
@@ -54,8 +59,8 @@ function concat_clips {
 
     if [[ -f $OUTPUT ]] \
         && [[ "$(read -e -p \
-            'File '$OUTPUT' already exists, do you want to replace? [y/N]>' \
-            echo $REPLY)" != "[Yy]*" ]]; then
+            'File '$OUTPUT' already exists, do you want to replace? [y/N]>'
+            echo $REPLY)" != [Yy]* ]]; then
         return
     fi
 
